@@ -1,6 +1,6 @@
-# ==========================================
+
 # STEP 1: INSTALL & LOAD LIBRARIES
-# ==========================================
+
 # Run once if needed
 # install.packages(c("tidyverse", "corrplot", "caret", "randomForest",
 #                    "cluster", "factoextra", "e1071", "rpart", "rpart.plot",
@@ -18,9 +18,8 @@ library(rpart.plot)
 library(ggcorrplot)
 library(vcd)
 
-# ==========================================
 # STEP 2: LOAD DATA
-# ==========================================
+
 df <- read.csv("student_data2.csv", stringsAsFactors = FALSE)
 
 # Clean column names (replace spaces/special chars with dots)
@@ -31,9 +30,9 @@ colnames(df) <- trimws(colnames(df))
 cat("✅ Cleaned Column Names:\n")
 print(colnames(df))
 
-# ==========================================
+
 # STEP 3: CLEAN GPA COLUMN & REMOVE NAs
-# ==========================================
+
 gpa_col <- "Current.GPA.CGPA.or.percentage"
 df[[gpa_col]] <- gsub("%", "", df[[gpa_col]])
 df[[gpa_col]] <- gsub("[^0-9\\.]", "", df[[gpa_col]])
@@ -41,14 +40,14 @@ df[[gpa_col]] <- as.numeric(df[[gpa_col]])
 df <- df[!is.na(df[[gpa_col]]), ]
 summary(df[[gpa_col]])
 
-# ==========================================
+
 # STEP 4: REMOVE UNNECESSARY COLUMNS
-# ==========================================
+
 df <- df %>% select(-c(Roll.no., Name))
 
-# ==========================================
+
 # STEP 5: HANDLE MISSING VALUES
-# ==========================================
+
 colSums(is.na(df))
 for (col in names(df)) {
   if (is.numeric(df[[col]])) {
@@ -59,20 +58,19 @@ for (col in names(df)) {
   }
 }
 
-# ==========================================
+
 # STEP 6: ENCODE CATEGORICAL VARIABLES
-# ==========================================
+
 df[] <- lapply(df, function(x) if (is.character(x)) as.factor(x) else x)
 
-# ==========================================
 # STEP 7: SCALE NUMERIC FEATURES
-# ==========================================
+
 num_cols <- sapply(df, is.numeric)
 df[num_cols] <- scale(df[num_cols])
 
-# ==========================================
+
 # STEP 8: CREATE GPA CATEGORY
-# ==========================================
+
 qtiles <- quantile(df[[gpa_col]], probs = c(0, 0.33, 0.66, 1), na.rm = TRUE)
 qtiles <- unique(qtiles)
 
@@ -91,9 +89,8 @@ if (any(table(df$GPA_Category) < 3)) {
   df$GPA_Category <- as.factor(df$GPA_Category)
 }
 
-# ==========================================
 # STEP 9: RENAME COLUMNS TO SIMPLER NAMES
-# ==========================================
+
 names(df)[grepl("Number.of.hours.studied.per.day", names(df), ignore.case = TRUE)] <- "StudyHours"
 names(df)[grepl("Average.sleep.per.night", names(df), ignore.case = TRUE)] <- "SleepHours"
 names(df)[grepl("Quality.of.sleep", names(df), ignore.case = TRUE)] <- "SleepQuality"
@@ -110,16 +107,16 @@ names(df)[grepl("affecting.your.academics", names(df), ignore.case = TRUE)] <- "
 cat("✅ Renamed Columns:\n")
 print(colnames(df))
 
-# ==========================================
+
 # STEP 10: CORRELATION ANALYSIS
-# ==========================================
+
 num_data <- df[, sapply(df, is.numeric)]
 corr_matrix <- cor(num_data, use = "pairwise.complete.obs")
 ggcorrplot(corr_matrix, lab = TRUE, title = "Correlation Heatmap: Habits vs GPA")
 
-# ==========================================
+
 # STEP 11: VISUALIZATION — LIFESTYLE & ACADEMIC PATTERNS
-# ==========================================
+
 
 # --- PIE CHARTS ---
 # Sleep Duration
@@ -178,8 +175,9 @@ num_data <- df[, sapply(df, is.numeric)]
 corr_matrix <- cor(num_data, use = "pairwise.complete.obs")
 ggcorrplot(corr_matrix, lab = TRUE, title = "Final Correlation Heatmap", ggtheme = theme_minimal())
 
-# ==========================================
+
 # STEP 12: SAVE CLEANED DATA
-# ==========================================
+
 write.csv(df, "cleaned_student_data_final.csv", row.names = FALSE)
 cat("✅ Cleaned dataset saved successfully as 'cleaned_student_data_final.csv'\n")
+
